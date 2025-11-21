@@ -20,7 +20,6 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ message: "Booking deleted" });
   } catch (err: any) {
-    console.error(err);
     const { message, status } = handlePrismaError(err);
     return NextResponse.json({ message }, { status });
   }

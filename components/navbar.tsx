@@ -33,12 +33,12 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center flex-wrap gap-4 overflow-x-auto mt-6">
+        <div className="flex items-center flex-nowrap gap-4 overflow-x-auto mt-6">
           {ROUTES.map((route) => (
             <Link
               key={route.path}
               href={route.path}
-              className={`px-2 py-1 rounded ${
+              className={`w-fit px-2 py-1 rounded ${
                 pathname === route.path && "bg-neutral-100 font-medium"
               }`}
             >

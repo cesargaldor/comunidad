@@ -60,7 +60,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: stripeSession.url });
   } catch (err: any) {
-    console.error(err);
     const { message, status } = handlePrismaError(err);
     return NextResponse.json({ message }, { status });
   }

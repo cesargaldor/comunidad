@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client/scripts/default-index.js";
 import { subHours } from "date-fns";
+import "dotenv/config";
 
 const prisma = new PrismaClient();
 
