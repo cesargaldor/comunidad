@@ -14,9 +14,11 @@ const TOTAL_AMOUNT_CENTS = BOOKING_PRICES.TOTAL * 100;
 
 export async function POST(req: NextRequest) {
   try {
+    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });
+
     const { date, name, phone } = await req.json();
 
     const booking = await prisma.booking.create({

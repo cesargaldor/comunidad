@@ -6,9 +6,11 @@ import { handlePrismaError } from "@/lib/errors";
 
 export async function DELETE(req: NextRequest) {
   try {
+    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });
+
     const { id } = await req.json();
 
     await prisma.booking.delete({

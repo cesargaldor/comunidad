@@ -13,8 +13,6 @@ export default async function DashboardLayout({
     headers: await headers(),
   });
 
-  console.log("session", session);
-
   return (
     <SessionProvider session={session}>
       <div className="bg-neutral-50">

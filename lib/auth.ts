@@ -27,6 +27,7 @@ export const auth = betterAuth({
     },
   },
   session: {
+    disableSessionRefresh: true,
     cookieCache: {
       enabled: true,
       maxAge: 60 * 60 * 24 * 7, // 7 days - cache session in cookie to avoid DB lookups

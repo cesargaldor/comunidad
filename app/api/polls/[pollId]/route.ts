@@ -10,6 +10,8 @@ export async function GET(
 ) {
   try {
     const { pollId } = await params;
+
+    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });

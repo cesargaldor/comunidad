@@ -16,6 +16,7 @@ const createPollSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
+    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -34,6 +35,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });

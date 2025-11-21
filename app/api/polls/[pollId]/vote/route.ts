@@ -14,6 +14,7 @@ export async function POST(
   { params }: { params: Promise<{ pollId: string }> }
 ) {
   try {
+    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });

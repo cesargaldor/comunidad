@@ -15,6 +15,7 @@ export async function PATCH(
   { params }: { params: Promise<{ pollId: string }> }
 ) {
   try {
+    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });
