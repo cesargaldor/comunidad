@@ -1,0 +1,27 @@
+name: Cleanup Pending Bookings
+
+on:
+  schedule:
+    - cron: "0 */1 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run cleanup script
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run cleanup

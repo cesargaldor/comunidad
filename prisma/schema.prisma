@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  role          UserRole  @default(USER)
+  image         String?   @map("google_image")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bookings      Booking[]
+  emailVerified Boolean   @default(false)
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("user")
+}
+
+enum BookingStatus {
+  PENDING // Creada, esperando la confirmación de pago de Stripe.
+  PAID // Pago confirmado (uso + fianza).
+
+  // -- Fases Post-Uso (Gestión de Fianza) --
+  COMPLETED_PENDING // Sala usada, pendiente de revisión por el administrador.
+  REFUND_APPROVED // Administrador aprueba: se debe iniciar el reembolso.
+  REFUNDED // Reembolso de la fianza (90€) completado en Stripe.
+  DEPOSIT_LOST // Fianza no devuelta por decisión del administrador (ej. daños).
+  CANCELLED // Cancelada o fallida.
+}
+
+model Booking {
+  id                    String        @id @default(cuid())
+  date                  DateTime      @db.Date
+  status                BookingStatus @default(PENDING)
+  stripePaymentIntentId String?       @unique @map("stripe_payment_intent_id")
+  totalAmountCents      Int
+  usageFeeCents         Int
+  depositCents          Int
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id])
+  formName              String
+  formPhone             String
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@unique([date])
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
