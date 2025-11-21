@@ -53,7 +53,7 @@ export default function BookingCalendar({
         url: "/api/bookings/create",
         method: "POST",
         body: {
-          date,
+          date: format(date, "yyyy-MM-dd"),
           name: value.name,
           phone: value.phone,
         },

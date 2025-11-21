@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { BOOKING_PRICES, BOOKING_STATUS } from "@/constants/bookings";
 import { handlePrismaError } from "@/lib/errors";
+import { startOfMonth, endOfMonth } from "date-fns";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-10-29.clover",
@@ -21,10 +22,53 @@ export async function POST(req: NextRequest) {
 
     const { date, name, phone } = await req.json();
 
+    // Normalize date to avoid timezone issues
+    // Convert to YYYY-MM-DD format and create date at UTC midnight
+    const dateStr = new Date(date).toISOString().split("T")[0];
+    const normalizedDate = new Date(dateStr + "T00:00:00.000Z");
+
+    // Check if user has a pending booking
+    const pendingBooking = await prisma.booking.findFirst({
+      where: {
+        userId: session?.user.id!,
+        status: BOOKING_STATUS.PENDING as any,
+      },
+    });
+
+    if (pendingBooking) {
+      return NextResponse.json(
+        {
+          message: "Ya tienes una reserva pendiente. Paga esa primero.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if user has 3 or more bookings in the same month
+    const monthStart = startOfMonth(normalizedDate);
+    const monthEnd = endOfMonth(normalizedDate);
+
+    const bookingsInMonth = await prisma.booking.count({
+      where: {
+        userId: session?.user.id!,
+        date: {
+          gte: monthStart,
+          lte: monthEnd,
+        },
+      },
+    });
+
+    if (bookingsInMonth >= 3) {
+      return NextResponse.json(
+        { message: "Has alcanzado el límite de 3 reservas por mes" },
+        { status: 400 }
+      );
+    }
+
     const booking = await prisma.booking.create({
       data: {
         userId: session?.user.id!,
-        date: new Date(date),
+        date: normalizedDate,
         status: BOOKING_STATUS.PENDING as any,
         formName: name,
         formPhone: phone,
