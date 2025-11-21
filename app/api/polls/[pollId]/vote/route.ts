@@ -41,14 +41,14 @@ export async function POST(
 
     if (!poll) {
       return NextResponse.json(
-        { message: "No se encontró la encuesta" },
+        { message: "No se encontró la votación" },
         { status: 404 }
       );
     }
 
     if (poll.status !== "ACTIVE") {
       return NextResponse.json(
-        { message: "La encuesta no está activa" },
+        { message: "La votación no está activa" },
         { status: 400 }
       );
     }

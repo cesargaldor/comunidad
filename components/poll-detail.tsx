@@ -14,12 +14,6 @@ import { cn } from "@/lib/utils";
 import { useApiRequest } from "@/hooks/useApiRequest";
 import { Poll, PollOption } from "@/src/generated/prisma/client";
 
-// type PollOption = {
-//   id: string;
-//   text: string;
-//   votes: number;
-// };
-
 interface PollDetailProps {
   initialPoll: Poll & {
     options: (PollOption & { votes: number })[];
@@ -46,6 +40,7 @@ export function PollDetail({ initialPoll, isAdmin }: PollDetailProps) {
     refetchInterval: (data) =>
       data?.state.data?.status === "ACTIVE" ? 10000 : false,
     refetchOnWindowFocus: false,
+    enabled: !!initialPoll,
   });
 
   const hasVoted = !!poll.userVotedOptionId;
@@ -58,6 +53,9 @@ export function PollDetail({ initialPoll, isAdmin }: PollDetailProps) {
       body: { optionId },
       successMessage: "¡Voto registrado!",
       errorMessage: "Ha habido un error al votar.",
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["poll", poll.id] });
+      },
     });
   };
 
@@ -66,7 +64,7 @@ export function PollDetail({ initialPoll, isAdmin }: PollDetailProps) {
       url: `/api/polls/${poll.id}/status`,
       method: "PATCH",
       body: { status: newStatus },
-      successMessage: `Encuesta marcada como ${
+      successMessage: `Votación marcada como ${
         newStatus.toLowerCase() === "active" ? "activa" : "finalizada"
       }`,
       errorMessage: "Ha habido un error al actualizar el estado.",
@@ -100,7 +98,7 @@ export function PollDetail({ initialPoll, isAdmin }: PollDetailProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          {poll.options.map((option) => {
+          {poll.options?.map((option) => {
             const percentage =
               poll.totalVotes > 0
                 ? Math.round((option.votes / poll.totalVotes) * 100)
@@ -171,7 +169,7 @@ export function PollDetail({ initialPoll, isAdmin }: PollDetailProps) {
 
       {!hasVoted && !isFinished && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {poll.options.map((option) => (
+          {poll.options?.map((option) => (
             <Button
               key={option.id}
               variant="outline"

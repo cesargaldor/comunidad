@@ -21,7 +21,7 @@ export async function PATCH(
 
     if (!session || session.user.role !== ROLES.ADMIN) {
       return NextResponse.json(
-        { message: "No puedes realizar esta acción." },
+        { message: "No autenticado" },
         { status: !session ? 401 : 403 }
       );
     }

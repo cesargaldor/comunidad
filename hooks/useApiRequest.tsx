@@ -9,7 +9,7 @@ type ApiRequestOptions = {
   body?: any;
   successMessage?: string;
   errorMessage?: string;
-  onSuccess?: () => void;
+  onSuccess?: (data: any) => void;
 };
 
 export function useApiRequest() {
@@ -48,7 +48,7 @@ export function useApiRequest() {
       router.refresh();
 
       if (onSuccess) {
-        onSuccess();
+        onSuccess(data);
       }
     } catch (error: any) {
       toast.error(

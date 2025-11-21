@@ -5,11 +5,11 @@ import Container from "./ui/container";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useSession } from "@/lib/auth-client";
+import { useSessionContext } from "@/components/session-provider";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { data } = useSession();
+  const session = useSessionContext();
 
   return (
     <nav className="bg-white py-6">
@@ -23,10 +23,10 @@ export default function Navbar() {
               alt="logo"
             />
           </div>
-          {data?.user && (
+          {session?.user && (
             <div>
               <Avatar>
-                <AvatarImage src={data?.user?.image!} alt="user-logo" />
+                <AvatarImage src={session?.user?.image!} alt="user-logo" />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
             </div>

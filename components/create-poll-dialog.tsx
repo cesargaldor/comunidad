@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { useApiRequest } from "@/hooks/useApiRequest";
+import { useQueryClient } from "@tanstack/react-query";
 
 const pollSchema = z.object({
   question: z.string().min(1, "La pregunta es obligatoria"),
@@ -38,13 +39,13 @@ export function CreatePollDialog() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { execute: executeCreatePoll } = useApiRequest();
+  const queryClient = useQueryClient();
 
   const {
     register,
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
   } = useForm<PollFormValues>({
     resolver: zodResolver(pollSchema),
     defaultValues: {
@@ -69,10 +70,11 @@ export function CreatePollDialog() {
         },
         successMessage: "¡Votación creada!",
         errorMessage: "Ha habido un error al crear la votación.",
-        onSuccess: () => {
-          setOpen(false);
-          reset();
-          router.refresh();
+        onSuccess: (data: any) => {
+          router.push(`/dashboard/polls/${data.id}`);
+          queryClient.invalidateQueries({
+            queryKey: ["polls"],
+          });
         },
       });
     } catch (error: any) {

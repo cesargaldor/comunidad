@@ -1,45 +1,56 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+"use client";
 import { PollCard } from "@/components/poll-card";
 import { CreatePollDialog } from "@/components/create-poll-dialog";
-import { getPolls } from "@/actions/polls";
 import { ROLES } from "@/constants/roles";
+import { useSessionContext } from "@/components/session-provider";
+import { useQuery } from "@tanstack/react-query";
 
-export default async function PollsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+export default function PollsPage() {
+  const session = useSessionContext();
   const isAdmin = session?.user?.role === ROLES.ADMIN;
-  const pollsData = await getPolls(session?.user?.id!);
 
-  const polls = pollsData?.map((poll) => {
-    const totalVotes = poll.options.reduce(
-      (acc, option) => acc + option._count.votes,
-      0
-    );
+  const { data: pollsData = [], isLoading } = useQuery({
+    queryKey: ["polls", session?.user?.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/polls`);
+      if (!res.ok) throw new Error("Error al obtener las votaciones");
+      const data = await res.json();
 
-    return {
-      ...poll,
-      totalVotes,
-    };
+      return data?.map((poll: any) => {
+        const totalVotes = poll.options.reduce(
+          (acc: number, option: any) => acc + option._count.votes,
+          0
+        );
+
+        return {
+          ...poll,
+          totalVotes,
+        };
+      });
+    },
+    enabled: !!session?.user?.id,
   });
 
   return (
-    <div className="">
+    <div>
       <div className="flex items-center justify-between">
         <h1 className="text-xl 2xl:text-3xl">Votaciones</h1>
         {isAdmin && <CreatePollDialog />}
       </div>
 
       <div className="grid gap-6 mt-10">
-        {polls.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 border rounded-lg bg-muted/10">
+            <p className="text-muted-foreground">Cargando votaciones...</p>
+          </div>
+        ) : pollsData?.length === 0 ? (
           <div className="text-center py-12 border rounded-lg bg-muted/10">
             <p className="text-muted-foreground">
               No hay votaciones activas por el momento.
             </p>
           </div>
         ) : (
-          polls.map((poll) => <PollCard key={poll.id} poll={poll} />)
+          pollsData?.map((poll: any) => <PollCard key={poll.id} poll={poll} />)
         )}
       </div>
     </div>

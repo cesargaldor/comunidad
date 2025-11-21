@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { ROLES } from "@/constants/roles";
+import { getPolls } from "@/actions/polls";
+import { handlePrismaError } from "@/lib/errors";
 
 const createPollSchema = z.object({
   question: z.string().min(1, "Question is required"),
@@ -12,6 +14,24 @@ const createPollSchema = z.object({
     .min(2, "At least 2 options are required"),
 });
 
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+    }
+
+    const polls = await getPolls(session?.user?.id!);
+    return NextResponse.json(polls);
+  } catch (error) {
+    const { message, status } = handlePrismaError(error);
+    return NextResponse.json({ message }, { status });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -19,7 +39,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!session || session.user.role !== ROLES.ADMIN) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "No autenticado" }, { status: 401 });
     }
 
     const body = await req.json();

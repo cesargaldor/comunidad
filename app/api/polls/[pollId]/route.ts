@@ -2,9 +2,12 @@ import { getPoll } from "@/actions/polls";
 import { auth } from "@/lib/auth";
 import { handlePrismaError } from "@/lib/errors";
 import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET({ params }: { params: Promise<{ pollId: string }> }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ pollId: string }> }
+) {
   try {
     const { pollId } = await params;
     const session = await auth.api.getSession({
