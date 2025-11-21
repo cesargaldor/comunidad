@@ -12,10 +12,9 @@ import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { useSession } from "@/lib/auth-client";
 import { ClubTermsDialog } from "./club-terms-dialog";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { BOOKING_PRICES } from "@/constants/bookings";
-import useHandleError from "@/hooks/useHandleError";
+import { useApiRequest } from "@/hooks/useApiRequest";
 
 export default function BookingCalendar({
   disabledDates,
@@ -24,10 +23,9 @@ export default function BookingCalendar({
 }) {
   const [date, setDate] = useState<Date>(new Date());
   const [showTerms, setShowTerms] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: session } = useSession();
   const router = useRouter();
-  const { handleError } = useHandleError();
+  const { execute: executeBooking, isLoading } = useApiRequest();
 
   const formSchema = z.object({
     name: z.string().min(2, {
@@ -51,24 +49,20 @@ export default function BookingCalendar({
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      setIsLoading(true);
-      try {
-        const res = await fetch("/api/bookings/create", {
-          method: "POST",
-          body: JSON.stringify({
-            date,
-            name: value.name,
-            phone: value.phone,
-          }),
-        });
-
-        const data = await handleError(res);
-        if (data.url) return router.replace(data.url);
-      } catch (error: any) {
-        console.log("Error:", error.error);
-      } finally {
-        setIsLoading(false);
-      }
+      await executeBooking({
+        url: "/api/bookings/create",
+        method: "POST",
+        body: {
+          date,
+          name: value.name,
+          phone: value.phone,
+        },
+        successMessage: "¡Reserva creada! Redirigiendo al pago...",
+        errorMessage: "Error al crear la reserva.",
+        onSuccess: (data) => {
+          if (data.url) router.replace(data.url);
+        },
+      });
     },
   });
 

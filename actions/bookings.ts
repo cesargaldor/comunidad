@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import { addMonths } from "date-fns";
-import { getUser } from "./user";
 
 export const getNextsBookings = async () => {
   const bookings = await prisma.booking.findMany({
@@ -18,11 +17,10 @@ export const getNextsBookings = async () => {
   return bookings;
 };
 
-export const getUserBookings = async () => {
-  const user = await getUser();
+export const getUserBookings = async (userId: string) => {
   const bookings = await prisma.booking.findMany({
     where: {
-      userId: user?.id!,
+      userId,
     },
     orderBy: {
       date: "asc",

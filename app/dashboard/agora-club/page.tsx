@@ -1,17 +1,39 @@
-import { getNextsBookings, getUserBookings } from "@/actions/bookings";
+"use client";
+import { useQuery } from "@tanstack/react-query";
+import { useSessionContext } from "@/components/session-provider";
 import ReservationCalendar from "@/components/booking-calendar";
 import BookingList from "@/components/booking-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isAfter, isBefore, isSameDay, startOfDay } from "date-fns";
+import { Booking } from "@/src/generated/prisma/client";
 
-export default async function AgoraClub() {
-  let bookings = [];
-  let userBookings = [];
+export default function AgoraClub() {
+  const session = useSessionContext();
 
-  try {
-    bookings = await getNextsBookings();
-    userBookings = await getUserBookings();
-  } catch (err: any) {
+  const { data, isLoading, isError } = useQuery<{
+    bookings: Booking[];
+    userBookings: Booking[];
+  }>({
+    queryKey: ["bookings"],
+    queryFn: async () => {
+      const res = await fetch("/api/bookings");
+      if (!res.ok) throw new Error("Error al obtener las reservas");
+      return res.json();
+    },
+    enabled: !!session?.user?.id,
+    refetchInterval: 5 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return (
+      <div>
+        <h1 className="text-xl 2xl:text-3xl mb-8">Reservar Ágora Club</h1>
+        <p className="text-muted-foreground">Cargando reservas...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
     return (
       <div>
         <h1 className="text-xl 2xl:text-3xl mb-8">Reservar Ágora Club</h1>
@@ -21,6 +43,8 @@ export default async function AgoraClub() {
       </div>
     );
   }
+
+  const { bookings = [], userBookings = [] } = data ?? {};
 
   return (
     <div>
