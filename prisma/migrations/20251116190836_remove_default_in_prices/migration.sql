@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "Booking" ALTER COLUMN "totalAmountCents" DROP DEFAULT,
-ALTER COLUMN "usageFeeCents" DROP DEFAULT,
-ALTER COLUMN "depositCents" DROP DEFAULT;

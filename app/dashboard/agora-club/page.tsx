@@ -2,17 +2,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSessionContext } from "@/components/session-provider";
 import ReservationCalendar from "@/components/booking-calendar";
-import BookingList from "@/components/booking-list";
+import BookingsTable from "@/components/bookings-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isAfter, isBefore, isSameDay, startOfDay } from "date-fns";
 import { Booking } from "@/src/generated/prisma/client";
+import { ROLES } from "@/constants/roles";
+
+interface BookingWithUser extends Booking {
+  user?: {
+    name: string | null;
+    email: string | null;
+  };
+}
 
 export default function AgoraClub() {
   const session = useSessionContext();
 
   const { data, isLoading, isError } = useQuery<{
     bookings: Booking[];
-    userBookings: Booking[];
+    userBookings: BookingWithUser[];
   }>({
     queryKey: ["bookings"],
     queryFn: async () => {
@@ -45,6 +53,7 @@ export default function AgoraClub() {
   }
 
   const { bookings = [], userBookings = [] } = data ?? {};
+  const isAdmin = session?.user?.role === ROLES.ADMIN;
 
   return (
     <div>
@@ -56,7 +65,7 @@ export default function AgoraClub() {
       {userBookings?.length > 0 && (
         <div>
           <h2 className="text-lg 2xl:text-2xl mt-12 mb-6 underline">
-            Mis Reservas
+            {isAdmin ? "Todas las Reservas" : "Mis Reservas"}
           </h2>
           <Tabs defaultValue="current">
             <TabsList>
@@ -64,17 +73,18 @@ export default function AgoraClub() {
               <TabsTrigger value="current">Actuales</TabsTrigger>
             </TabsList>
             <TabsContent value="old">
-              <BookingList
+              <BookingsTable
                 bookings={userBookings?.filter((booking) =>
                   isBefore(
                     startOfDay(new Date(booking.date)),
                     startOfDay(new Date())
                   )
                 )}
+                isAdmin={isAdmin}
               />
             </TabsContent>
             <TabsContent value="current">
-              <BookingList
+              <BookingsTable
                 bookings={userBookings?.filter(
                   (booking) =>
                     isSameDay(
@@ -86,6 +96,7 @@ export default function AgoraClub() {
                       startOfDay(new Date())
                     )
                 )}
+                isAdmin={isAdmin}
               />
             </TabsContent>
           </Tabs>

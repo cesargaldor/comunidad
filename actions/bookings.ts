@@ -22,6 +22,50 @@ export const getUserBookings = async (userId: string) => {
     where: {
       userId,
     },
+    include: {
+      canceledBy: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+      refundedBy: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      date: "asc",
+    },
+  });
+
+  return bookings;
+};
+
+export const getAllBookingsWithUsers = async () => {
+  const bookings = await prisma.booking.findMany({
+    include: {
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+      canceledBy: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+      refundedBy: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
     orderBy: {
       date: "asc",
     },

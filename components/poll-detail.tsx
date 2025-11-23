@@ -75,7 +75,7 @@ export function PollDetail({ initialPoll, isAdmin }: PollDetailProps) {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-auto mt-10">
       <Card
         className={cn(
           "w-full transition-all",

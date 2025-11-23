@@ -1,9 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
-import { useState } from "react";
-import { toast } from "sonner";
-import useHandleError from "@/hooks/useHandleError";
+import { useApiRequest } from "@/hooks/useApiRequest";
+import { ROUTES_PATHS } from "@/constants/routes";
 
 export default function Checkout({
   canceled,
@@ -13,26 +12,20 @@ export default function Checkout({
   bookingId?: string;
 }) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { handleError } = useHandleError();
+  const { execute, isLoading } = useApiRequest();
 
   const handleRetryPayment = async () => {
     if (!bookingId) return;
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/bookings/retry", {
-        method: "POST",
-        body: JSON.stringify({
-          bookingId,
-        }),
-      });
-      const data = await handleError(res);
-      if (data.url) router.replace(data.url);
-    } catch (error: any) {
-      toast.error("Error al reintentar el pago. Inténtelo más tarde");
-    } finally {
-      setIsLoading(false);
-    }
+
+    await execute({
+      url: "/api/bookings/retry",
+      method: "POST",
+      body: { bookingId },
+      errorMessage: "Error al reintentar el pago. Inténtelo más tarde",
+      onSuccess: (data) => {
+        if (data?.url) router.replace(data.url);
+      },
+    });
   };
 
   return (
@@ -47,12 +40,12 @@ export default function Checkout({
           <div className="flex justify-center gap-6 mt-8">
             <Button
               variant="outline"
-              onClick={() => router.push("/dashboard/agora-club")}
+              onClick={() => router.push(ROUTES_PATHS.AGORA_CLUB)}
             >
               Volver
             </Button>
-            <Button onClick={handleRetryPayment}>
-              {isLoading ? "Reintando..." : "Reintentar pago"}
+            <Button onClick={handleRetryPayment} disabled={isLoading}>
+              {isLoading ? "Reintentando..." : "Reintentar pago"}
             </Button>
           </div>
         </div>
@@ -66,7 +59,7 @@ export default function Checkout({
           <Button
             className="mt-6"
             variant="outline"
-            onClick={() => router.push("/dashboard/agora-club")}
+            onClick={() => router.push(ROUTES_PATHS.AGORA_CLUB)}
           >
             Volver
           </Button>

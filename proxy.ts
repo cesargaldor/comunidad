@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { ROUTES_PATHS } from "./constants/routes";
 
 export async function proxy(request: NextRequest) {
   const res = await fetch(`${request.nextUrl.origin}/api/auth/get-session`, {
@@ -10,16 +11,19 @@ export async function proxy(request: NextRequest) {
 
   const data = await res.json();
 
-  if (!request.nextUrl.pathname.includes("/login") && !data?.session) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (
+    !request.nextUrl.pathname.includes(ROUTES_PATHS.LOGIN) &&
+    !data?.session
+  ) {
+    return NextResponse.redirect(new URL(ROUTES_PATHS.LOGIN, request.url));
   }
 
   if (
     (request.nextUrl.pathname === "/" ||
-      request.nextUrl.pathname.includes("/login")) &&
+      request.nextUrl.pathname.includes(ROUTES_PATHS.LOGIN)) &&
     data?.session
   ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL(ROUTES_PATHS.AGORA_CLUB, request.url));
   }
 
   return NextResponse.next();

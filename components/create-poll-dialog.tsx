@@ -21,6 +21,7 @@ import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { useApiRequest } from "@/hooks/useApiRequest";
 import { useQueryClient } from "@tanstack/react-query";
+import { ROUTES_PATHS } from "@/constants/routes";
 
 const pollSchema = z.object({
   question: z.string().min(1, "La pregunta es obligatoria"),
@@ -71,7 +72,7 @@ export function CreatePollDialog() {
         successMessage: "¡Votación creada!",
         errorMessage: "Ha habido un error al crear la votación.",
         onSuccess: (data: any) => {
-          router.push(`/dashboard/polls/${data.id}`);
+          router.push(`${ROUTES_PATHS.POLLS}/${data.id}`);
           queryClient.invalidateQueries({
             queryKey: ["polls"],
           });

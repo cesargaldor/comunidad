@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { BOOKING_PRICES, BOOKING_STATUS } from "@/constants/bookings";
 import { handlePrismaError } from "@/lib/errors";
 import { startOfMonth, endOfMonth } from "date-fns";
+import { ROUTES_PATHS } from "@/constants/routes";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-10-29.clover",
@@ -15,7 +16,6 @@ const TOTAL_AMOUNT_CENTS = BOOKING_PRICES.TOTAL * 100;
 
 export async function POST(req: NextRequest) {
   try {
-    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     if (bookingsInMonth >= 3) {
       return NextResponse.json(
-        { message: "Has alcanzado el límite de 3 reservas por mes" },
+        { message: "Has alcanzado el límite de 3 reservas por mes." },
         { status: 400 }
       );
     }
@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
         form_phone: phone,
       },
       customer_email: session?.user.email!,
-      success_url: `${process.env.BASE_URL}/dashboard/agora-club/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.BASE_URL}/dashboard/agora-club/checkout?canceled=true&booking_id=${booking.id}`,
+      success_url: `${process.env.BASE_URL}/${ROUTES_PATHS.AGORA_CLUB}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.BASE_URL}/${ROUTES_PATHS.AGORA_CLUB}/checkout?canceled=true&booking_id=${booking.id}`,
     });
 
     return NextResponse.json({ url: stripeSession.url });

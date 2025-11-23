@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { MoveLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ROUTES_PATHS } from "@/constants/routes";
 
 export default function PollPage() {
   const session = useSessionContext();
@@ -35,7 +36,7 @@ export default function PollPage() {
 
   useEffect(() => {
     if (isError) {
-      return router.replace("/dashboard/polls");
+      return router.replace(ROUTES_PATHS.POLLS);
     }
   }, [isError]);
 
@@ -44,8 +45,8 @@ export default function PollPage() {
       {isLoading && <div className="py-8">Cargando...</div>}
 
       {poll && (
-        <div className="space-y-8">
-          <Link href="/dashboard/polls">
+        <div>
+          <Link href={ROUTES_PATHS.POLLS}>
             <Button variant="ghost">
               <MoveLeftIcon /> Volver
             </Button>

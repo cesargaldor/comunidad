@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ROUTES_PATHS } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { Poll } from "@/src/generated/prisma/client";
 import Link from "next/link";
@@ -17,7 +18,10 @@ export function PollCard({ poll }: PollCardProps) {
   const isFinished = poll.status === "FINISHED";
 
   return (
-    <Link href={`/dashboard/polls/${poll.id}`} className="block group/card">
+    <Link
+      href={`${ROUTES_PATHS.POLLS}/${poll.id}`}
+      className="block group/card"
+    >
       <Card
         className={cn(
           "w-full transition-all hover:border-primary/50",

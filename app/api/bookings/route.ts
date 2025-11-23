@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { getNextsBookings, getUserBookings } from "@/actions/bookings";
+import {
+  getNextsBookings,
+  getUserBookings,
+  getAllBookingsWithUsers,
+} from "@/actions/bookings";
 import { handlePrismaError } from "@/lib/errors";
+import { ROLES } from "@/constants/roles";
 
 export async function GET(req: NextRequest) {
   try {
-    ("use cache");
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -16,6 +20,14 @@ export async function GET(req: NextRequest) {
     }
 
     const bookings = await getNextsBookings();
+
+    // If admin, return all bookings with user info
+    if (session.user.role === ROLES.ADMIN) {
+      const allBookings = await getAllBookingsWithUsers();
+      return NextResponse.json({ bookings, userBookings: allBookings });
+    }
+
+    // For regular users, return only their bookings
     const userBookings = await getUserBookings(session.user.id);
 
     return NextResponse.json({ bookings, userBookings });

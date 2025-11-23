@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { BOOKING_PRICES } from "@/constants/bookings";
 import prisma from "@/lib/prisma";
 import { handlePrismaError } from "@/lib/errors";
+import { ROUTES_PATHS } from "@/constants/routes";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-10-29.clover",
@@ -56,8 +57,8 @@ export async function POST(req: NextRequest) {
         form_phone: phone,
       },
       customer_email: session?.user.email!,
-      success_url: `${process.env.BASE_URL}/dashboard/agora-club/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.BASE_URL}/dashboard/agora-club/checkout?canceled=true&booking_id=${bookingId}`,
+      success_url: `${process.env.BASE_URL}/${ROUTES_PATHS.AGORA_CLUB}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.BASE_URL}/${ROUTES_PATHS.AGORA_CLUB}/checkout?canceled=true&booking_id=${bookingId}`,
     });
 
     return NextResponse.json({ url: stripeSession.url });

@@ -13,18 +13,20 @@ enum UserRole {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  role          UserRole  @default(USER)
-  image         String?   @map("google_image")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  bookings      Booking[]
-  emailVerified Boolean   @default(false)
-  sessions      Session[]
-  accounts      Account[]
-  votes         Vote[]
+  id               String    @id @default(cuid())
+  name             String?
+  email            String?   @unique
+  role             UserRole  @default(USER)
+  image            String?   @map("google_image")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  bookings         Booking[] @relation("UserBookings")
+  canceledBookings Booking[] @relation("CanceledBookings")
+  refundedBookings Booking[] @relation("RefundedBookings")
+  emailVerified    Boolean   @default(false)
+  sessions         Session[]
+  accounts         Account[]
+  votes            Vote[]
 
   @@map("user")
 }
@@ -34,8 +36,6 @@ enum BookingStatus {
   PAID // Pago confirmado (uso + fianza).
 
   // -- Fases Post-Uso (Gestión de Fianza) --
-  COMPLETED_PENDING // Sala usada, pendiente de revisión por el administrador.
-  REFUND_APPROVED // Administrador aprueba: se debe iniciar el reembolso.
   REFUNDED // Reembolso de la fianza (90€) completado en Stripe.
   DEPOSIT_LOST // Fianza no devuelta por decisión del administrador (ej. daños).
   CANCELLED // Cancelada o fallida.
@@ -50,9 +50,16 @@ model Booking {
   usageFeeCents         Int
   depositCents          Int
   userId                String
-  user                  User          @relation(fields: [userId], references: [id])
+  user                  User          @relation(fields: [userId], references: [id], name: "UserBookings")
   formName              String
   formPhone             String
+  canceledById          String?
+  canceledBy            User?         @relation(fields: [canceledById], references: [id], name: "CanceledBookings")
+  stripeRefundId        String?       @map("stripe_refund_id")
+  refundedAt            DateTime?
+  refundAmountCents     Int?
+  refundedById          String?
+  refundedBy            User?         @relation(fields: [refundedById], references: [id], name: "RefundedBookings")
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 

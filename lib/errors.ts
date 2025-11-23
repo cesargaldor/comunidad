@@ -1,6 +1,7 @@
 import { Prisma } from "../src/generated/prisma/client";
 
 export function handlePrismaError(err: any) {
+  console.log("ERROR", err);
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     switch (err.code) {
       case "P2002":
